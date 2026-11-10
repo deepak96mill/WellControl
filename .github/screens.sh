@@ -21,13 +21,23 @@ adb shell am broadcast -a com.android.systemui.demo -e command enter
 adb shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 0930
 adb shell am broadcast -a com.android.systemui.demo -e command battery -e level 85 -e plugged false
 adb shell am broadcast -a com.android.systemui.demo -e command network -e mobile hide
-adb shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4
+adb shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4 -e fully true
 adb shell am broadcast -a com.android.systemui.demo -e command notifications -e visible false
+
+# The CI emulator is slow right after boot: hide "isn't responding" pop-ups and let it settle
+adb shell settings put global hide_error_dialogs 1
+sleep 45
 
 adb shell am start -W -n com.wellcontrol.app/.MainActivity
 sleep 12
+for i in 1 2 3 4; do
+  dump home
+  WAIT=$(where home Wait)
+  [ -z "$WAIT" ] && break
+  tap $WAIT
+  sleep 8
+done
 shot 01_home
-dump home
 mapfile -t SW < <(python3 .github/find_ui.py "$OUT/home.xml" switches)
 echo "switches: ${SW[*]}"
 SETUP=$(where home Setup)
