@@ -30,6 +30,8 @@ fun WellTheme(content: @Composable () -> Unit) {
         colorScheme = lightColorScheme(
             primary = Brand,
             secondary = Accent,
+            secondaryContainer = Color(0xFFDCEEF6),
+            onSecondaryContainer = Brand,
             background = AppBg,
             surface = Color.White,
         ),
