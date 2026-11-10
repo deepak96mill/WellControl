@@ -20,8 +20,6 @@ adb shell settings put global sysui_demo_allowed 1
 adb shell am broadcast -a com.android.systemui.demo -e command enter
 adb shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 0930
 adb shell am broadcast -a com.android.systemui.demo -e command battery -e level 85 -e plugged false
-adb shell am broadcast -a com.android.systemui.demo -e command network -e mobile hide
-adb shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4 -e fully true
 adb shell am broadcast -a com.android.systemui.demo -e command notifications -e visible false
 
 # The CI emulator is slow right after boot: hide "isn't responding" pop-ups and let it settle

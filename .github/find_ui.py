@@ -20,10 +20,11 @@ def nodes(path):
 ns = nodes(sys.argv[1])
 mode = sys.argv[2]
 if mode == "switches":
+    screen_w = max(x2 for _, _, _, x2, _ in ns)
     found = []
     for n, x1, y1, x2, y2 in ns:
-        w, h = x2 - x1, y2 - y1
-        if n.get("clickable") == "true" and h > 0 and 1.45 < w / h < 1.85 and w < 260:
+        w = x2 - x1
+        if n.get("clickable") == "true" and w < 0.2 * screen_w and (x1 + x2) / 2 > 0.72 * screen_w:
             found.append(((x1 + x2) // 2, (y1 + y2) // 2))
     for x, y in sorted(set(found), key=lambda p: p[1]):
         print(x, y)
