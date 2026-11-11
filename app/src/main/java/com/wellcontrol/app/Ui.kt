@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -42,6 +43,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -85,6 +87,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -406,6 +409,7 @@ fun HomeScreen(vm: MainViewModel, onOpen: (Int) -> Unit) {
         val s = vm.statuses[d.id]
         s != null && s.online && s.running
     }
+    val listView = vm.settings.listView
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -435,15 +439,30 @@ fun HomeScreen(vm: MainViewModel, onOpen: (Int) -> Unit) {
                 Text("Tap a motor for details", fontSize = 13.sp, color = Muted)
             }
         }
-        gridItems(items = vm.devices, key = { it.id }) { d ->
-            DeviceTile(
-                device = d,
-                status = vm.statuses[d.id],
-                pending = vm.pending[d.id],
-                outcome = vm.outcomes[d.id],
-                onToggle = { on -> vm.setRunning(d, on) },
-                onOpen = { onOpen(d.id) },
-            )
+        gridItems(
+            items = vm.devices,
+            key = { it.id },
+            span = { GridItemSpan(if (listView) maxLineSpan else 1) },
+        ) { d ->
+            if (listView) {
+                DeviceRow(
+                    device = d,
+                    status = vm.statuses[d.id],
+                    pending = vm.pending[d.id],
+                    outcome = vm.outcomes[d.id],
+                    onToggle = { on -> vm.setRunning(d, on) },
+                    onOpen = { onOpen(d.id) },
+                )
+            } else {
+                DeviceTile(
+                    device = d,
+                    status = vm.statuses[d.id],
+                    pending = vm.pending[d.id],
+                    outcome = vm.outcomes[d.id],
+                    onToggle = { on -> vm.setRunning(d, on) },
+                    onOpen = { onOpen(d.id) },
+                )
+            }
         }
     }
 }
@@ -511,12 +530,13 @@ fun WaterBackground(animate: Boolean, modifier: Modifier = Modifier) {
             modifier = Modifier.matchParentSize(),
         )
         WaveCanvas(animate = animate, millis = 7000, modifier = Modifier.matchParentSize()) { phase ->
-            wave(phase, 0.50f, 12.dp.toPx(), 1.1f, Color.White.copy(alpha = 0.10f))
-            wave(-phase + 2f, 0.56f, 9.dp.toPx(), 1.7f, Color.White.copy(alpha = 0.10f))
+            wave(phase, 0.36f, 8.dp.toPx(), 1.1f, Color.White.copy(alpha = 0.10f))
+            wave(-phase + 2f, 0.46f, 6.dp.toPx(), 1.7f, Color.White.copy(alpha = 0.10f))
         }
     }
 }
 
+/** Compact summary card: how many motors run, quick totals and Stop all. */
 @Composable
 fun Hero(vm: MainViewModel, running: List<Device>) {
     val count = running.size
@@ -537,88 +557,98 @@ fun Hero(vm: MainViewModel, running: List<Device>) {
     Box(
         Modifier
             .fillMaxWidth()
-            .shadow(14.dp, HeroShape, spotColor = Sky.copy(alpha = 0.5f))
+            .shadow(12.dp, HeroShape, spotColor = Sky.copy(alpha = 0.5f))
             .clip(HeroShape)
     ) {
         WaterBackground(animate = count > 0, modifier = Modifier.matchParentSize())
 
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Spacer(Modifier.height(18.dp))
-            Box(
-                Modifier
-                    .size(50.dp)
-                    .background(
-                        Brush.verticalGradient(
-                            listOf(Color.White.copy(alpha = 0.40f), Color.White.copy(alpha = 0.14f))
-                        ),
-                        CircleShape,
-                    )
-                    .border(1.5.dp, Color.White.copy(alpha = 0.55f), CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_drop),
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(25.dp),
-                )
-            }
-            Spacer(Modifier.height(8.dp))
-            Text("Motors running", color = Color.White.copy(alpha = 0.92f), fontSize = 16.sp)
-            Row {
-                Text(
-                    "$count",
-                    color = Color.White,
-                    fontSize = 74.sp,
-                    lineHeight = 78.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.alignByBaseline(),
-                )
-                Text(
-                    "/$total",
-                    color = Color.White.copy(alpha = 0.78f),
-                    fontSize = 28.sp,
-                    lineHeight = 32.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier
-                        .padding(start = 6.dp)
-                        .alignByBaseline(),
-                )
-            }
+        Column(Modifier.fillMaxWidth()) {
             Row(
                 Modifier
-                    .background(Color.White.copy(alpha = 0.20f), CircleShape)
-                    .border(1.dp, Color.White.copy(alpha = 0.40f), CircleShape)
-                    .padding(horizontal = 16.dp, vertical = 9.dp),
+                    .fillMaxWidth()
+                    .padding(start = 20.dp, end = 14.dp, top = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Box(
-                    Modifier
-                        .size(8.dp)
-                        .background(if (count > 0) Color(0xFF8DF5A9) else Color.White.copy(alpha = 0.8f), CircleShape)
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(headline, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                Column(Modifier.weight(1f)) {
+                    Text("Motors running", color = Color.White.copy(alpha = 0.92f), fontSize = 15.sp)
+                    Row {
+                        Text(
+                            "$count",
+                            color = Color.White,
+                            fontSize = 58.sp,
+                            lineHeight = 62.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.alignByBaseline(),
+                        )
+                        Text(
+                            "/$total",
+                            color = Color.White.copy(alpha = 0.78f),
+                            fontSize = 24.sp,
+                            lineHeight = 28.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier
+                                .padding(start = 5.dp)
+                                .alignByBaseline(),
+                        )
+                    }
+                }
+                Column(
+                    Modifier.widthIn(max = 210.dp),
+                    horizontalAlignment = Alignment.End,
+                ) {
+                    Row(
+                        Modifier
+                            .background(Color.White.copy(alpha = 0.20f), CircleShape)
+                            .border(1.dp, Color.White.copy(alpha = 0.40f), CircleShape)
+                            .padding(horizontal = 13.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Box(
+                            Modifier
+                                .size(8.dp)
+                                .background(
+                                    if (count > 0) Color(0xFF8DF5A9) else Color.White.copy(alpha = 0.8f),
+                                    CircleShape,
+                                )
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            headline,
+                            color = Color.White,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Button(
+                        onClick = { vm.stopAll() },
+                        shape = CircleShape,
+                        colors = ButtonDefaults.buttonColors(containerColor = Navy, contentColor = Color.White),
+                        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 0.dp),
+                        modifier = Modifier.height(44.dp),
+                    ) {
+                        Text("Stop all motors", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                }
             }
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(10.dp))
 
             // White panel sitting inside the hero.
-            Column(
+            Row(
                 Modifier
                     .padding(8.dp)
                     .fillMaxWidth()
-                    .background(Color.White, CardShape)
-                    .padding(horizontal = 12.dp, vertical = 16.dp)
+                    .background(Color.White, RoundedCornerShape(24.dp))
+                    .padding(horizontal = 10.dp, vertical = 11.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    HeroStat("Total load", if (count > 0) amps(load) else "0 A", Modifier.weight(1f))
-                    VLine()
-                    HeroStat("Longest run", longest?.let { formatDuration(it) } ?: "–", Modifier.weight(1f))
-                    VLine()
-                    HeroStat("Next auto-off", nextOff?.let { formatDuration(it) } ?: "–", Modifier.weight(1f))
-                }
-                Spacer(Modifier.height(14.dp))
-                PillButton("Stop all motors", onClick = { vm.stopAll() })
+                HeroStat("Total load", if (count > 0) amps(load) else "0 A", Modifier.weight(1f))
+                VLine()
+                HeroStat("Longest run", longest?.let { formatDuration(it) } ?: "–", Modifier.weight(1f))
+                VLine()
+                HeroStat("Next auto-off", nextOff?.let { formatDuration(it) } ?: "–", Modifier.weight(1f))
             }
         }
     }
@@ -628,8 +658,8 @@ fun Hero(vm: MainViewModel, running: List<Device>) {
 private fun HeroStat(label: String, value: String, modifier: Modifier = Modifier) {
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(label, fontSize = 13.sp, color = Muted, maxLines = 1)
-        Spacer(Modifier.height(2.dp))
-        Text(value, fontSize = 22.sp, fontWeight = FontWeight.SemiBold, color = Navy, maxLines = 1)
+        Spacer(Modifier.height(1.dp))
+        Text(value, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = Navy, maxLines = 1)
     }
 }
 
@@ -643,38 +673,32 @@ private fun VLine() {
     )
 }
 
-/** Square tile for one motor: icon, switch, name and what it is doing right now. */
-@Composable
-fun DeviceTile(
-    device: Device,
-    status: DeviceStatus?,
-    pending: Pending?,
-    outcome: Outcome?,
-    onToggle: (Boolean) -> Unit,
-    onOpen: () -> Unit,
-) {
-    val online = status?.online == true
-    val isRunning = online && status?.running == true
-    val live = isRunning && pending == null
-    val fault = status?.fault.orEmpty()
-    val switchOn = pending?.target ?: isRunning
+/** Everything a tile or a list row needs to show for one motor. */
+private class MotorView(
+    val online: Boolean,
+    val running: Boolean,
+    /** Running and not in the middle of a command: drawn as moving water. */
+    val live: Boolean,
+    val switchOn: Boolean,
+    val line1: String,
+    val line1Color: Color,
+    val line2: String,
+)
 
-    val nameColor = if (live) Color.White else Navy
-    val soft = if (live) Color.White.copy(alpha = 0.95f) else Muted
+private fun motorView(device: Device, status: DeviceStatus?, pending: Pending?, outcome: Outcome?): MotorView {
+    val online = status?.online == true
+    val running = online && status?.running == true
+    val fault = status?.fault.orEmpty()
+    val runSecs = status?.runSecs ?: 0
 
     val line1: String
     val line1Color: Color
     val line2: String
     when {
-        pending != null && pending.stage == Stage.SENDING -> {
-            line1 = if (pending.target) "Starting…" else "Stopping…"
-            line1Color = Amber
-            line2 = "Sending command"
-        }
         pending != null -> {
             line1 = if (pending.target) "Starting…" else "Stopping…"
             line1Color = Amber
-            line2 = "Waiting for sensor"
+            line2 = if (pending.stage == Stage.SENDING) "Sending command" else "Waiting for sensor"
         }
         outcome != null && !outcome.ok -> {
             line1 = "No response"
@@ -691,11 +715,11 @@ fun DeviceTile(
             line1Color = RedOff
             line2 = fault
         }
-        isRunning -> {
-            line1 = if (outcome != null) "✓ Confirmed ON" else "Running  ${clock(status?.runSecs ?: 0)}"
+        running -> {
+            line1 = if (outcome != null) "✓ Confirmed ON" else "Running  ${clock(runSecs)}"
             line1Color = Color.White
             val off = if (device.autoOffMin > 0) {
-                "off in ${formatDuration(device.autoOffMin * 60 - (status?.runSecs ?: 0))}"
+                "off in ${formatDuration(device.autoOffMin * 60 - runSecs)}"
             } else {
                 "no auto-off"
             }
@@ -707,32 +731,105 @@ fun DeviceTile(
             line2 = if (device.autoOffMin > 0) "Auto-off ${device.autoOffMin} min" else "No auto-off"
         }
     }
+    return MotorView(
+        online = online,
+        running = running,
+        live = running && pending == null,
+        switchOn = pending?.target ?: running,
+        line1 = line1,
+        line1Color = line1Color,
+        line2 = line2,
+    )
+}
+
+/** Moving water drawn behind a running tile or row. */
+@Composable
+private fun LiveWater(modifier: Modifier = Modifier) {
+    Box(modifier) {
+        Image(
+            painter = painterResource(R.drawable.tile_water),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.matchParentSize(),
+        )
+        WaveCanvas(animate = true, millis = 4200, modifier = Modifier.matchParentSize()) { phase ->
+            wave(phase, 0.50f, 5.dp.toPx(), 1.2f, Color(0xFF0B46B8).copy(alpha = 0.22f))
+            wave(-phase + 1.5f, 0.62f, 4.dp.toPx(), 1.8f, Color(0xFF0B46B8).copy(alpha = 0.26f))
+        }
+    }
+}
+
+@Composable
+private fun KindChip(kind: DeviceKind, live: Boolean, size: Int) {
+    Box(
+        Modifier
+            .size(size.dp)
+            .background(if (live) Color.White.copy(alpha = 0.24f) else Chip, RoundedCornerShape(15.dp)),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painter = painterResource(kindIcon(kind)),
+            contentDescription = null,
+            tint = if (live) Color.White else Navy,
+            modifier = Modifier.size(24.dp),
+        )
+    }
+}
+
+@Composable
+private fun MotorTexts(name: String, view: MotorView) {
+    Text(
+        name,
+        fontSize = 19.sp,
+        fontWeight = FontWeight.SemiBold,
+        color = if (view.live) Color.White else Navy,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
+    Spacer(Modifier.height(3.dp))
+    Text(
+        view.line1,
+        fontSize = 14.sp,
+        fontWeight = FontWeight.SemiBold,
+        color = view.line1Color,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
+    Text(
+        view.line2,
+        fontSize = 13.sp,
+        color = if (view.live) Color.White.copy(alpha = 0.95f) else Muted,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
+}
+
+/** Tile view: square tile for one motor. */
+@Composable
+fun DeviceTile(
+    device: Device,
+    status: DeviceStatus?,
+    pending: Pending?,
+    outcome: Outcome?,
+    onToggle: (Boolean) -> Unit,
+    onOpen: () -> Unit,
+) {
+    val view = motorView(device, status, pending, outcome)
 
     Box(
         Modifier
             .fillMaxWidth()
             .height(176.dp)
             .shadow(
-                elevation = if (live) 12.dp else 2.dp,
+                elevation = if (view.live) 12.dp else 2.dp,
                 shape = TileShape,
-                spotColor = if (live) Sky.copy(alpha = 0.6f) else Navy.copy(alpha = 0.25f),
+                spotColor = if (view.live) Sky.copy(alpha = 0.6f) else Navy.copy(alpha = 0.25f),
             )
             .clip(TileShape)
             .background(Color.White)
             .clickable(onClick = onOpen)
     ) {
-        if (live) {
-            Image(
-                painter = painterResource(R.drawable.tile_water),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.matchParentSize(),
-            )
-            WaveCanvas(animate = true, millis = 4200, modifier = Modifier.matchParentSize()) { phase ->
-                wave(phase, 0.50f, 6.dp.toPx(), 1.2f, Color(0xFF0B46B8).copy(alpha = 0.22f))
-                wave(-phase + 1.5f, 0.60f, 5.dp.toPx(), 1.8f, Color(0xFF0B46B8).copy(alpha = 0.26f))
-            }
-        }
+        if (view.live) LiveWater(Modifier.matchParentSize())
 
         Column(
             Modifier
@@ -740,51 +837,75 @@ fun DeviceTile(
                 .padding(start = 16.dp, end = 14.dp, top = 12.dp, bottom = 16.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    Modifier
-                        .size(44.dp)
-                        .background(if (live) Color.White.copy(alpha = 0.24f) else Chip, RoundedCornerShape(15.dp)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        painter = painterResource(kindIcon(device.kind)),
-                        contentDescription = null,
-                        tint = if (live) Color.White else Navy,
-                        modifier = Modifier.size(24.dp),
-                    )
-                }
+                KindChip(device.kind, view.live, 44)
                 Spacer(Modifier.weight(1f))
                 IosSwitch(
-                    checked = switchOn,
+                    checked = view.switchOn,
                     busy = pending != null,
-                    enabled = online,
+                    enabled = view.online,
                     onChange = onToggle,
                 )
             }
             Spacer(Modifier.weight(1f))
-            Text(
-                device.name,
-                fontSize = 19.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = nameColor,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+            MotorTexts(device.name, view)
+        }
+
+        if (pending != null) {
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(5.dp),
+                color = Amber,
+                trackColor = TintAmber,
             )
-            Spacer(Modifier.height(3.dp))
-            Text(
-                line1,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = line1Color,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+        }
+    }
+}
+
+/** List view: one full-width row for one motor. */
+@Composable
+fun DeviceRow(
+    device: Device,
+    status: DeviceStatus?,
+    pending: Pending?,
+    outcome: Outcome?,
+    onToggle: (Boolean) -> Unit,
+    onOpen: () -> Unit,
+) {
+    val view = motorView(device, status, pending, outcome)
+
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = if (view.live) 10.dp else 2.dp,
+                shape = CardShape,
+                spotColor = if (view.live) Sky.copy(alpha = 0.6f) else Navy.copy(alpha = 0.25f),
             )
-            Text(
-                line2,
-                fontSize = 13.sp,
-                color = soft,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+            .clip(CardShape)
+            .background(Color.White)
+            .clickable(onClick = onOpen)
+    ) {
+        if (view.live) LiveWater(Modifier.matchParentSize())
+
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(start = 14.dp, end = 14.dp, top = 12.dp, bottom = 13.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            KindChip(device.kind, view.live, 48)
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
+                MotorTexts(device.name, view)
+            }
+            Spacer(Modifier.width(10.dp))
+            IosSwitch(
+                checked = view.switchOn,
+                busy = pending != null,
+                enabled = view.online,
+                onChange = onToggle,
             )
         }
 
@@ -818,11 +939,16 @@ fun DeviceSheet(vm: MainViewModel, device: Device, onDismiss: () -> Unit) {
         device.autoOffMin > 0 -> (1f - runSecs / (device.autoOffMin * 60f)).coerceIn(0f, 1f)
         else -> 1f
     }
+    val autoOff = when {
+        device.autoOffMin <= 0 -> "no auto-off"
+        isRunning -> "off in ${formatDuration(device.autoOffMin * 60 - runSecs)}"
+        else -> "auto-off after ${device.autoOffMin} min"
+    }
     val (centerText, caption) = when {
         pending != null -> (if (pending.target) "Starting" else "Stopping") to "please wait"
         !online -> "Offline" to "not reachable"
-        isRunning -> clock(runSecs) to "running"
-        else -> "Off" to "motor stopped"
+        isRunning -> clock(runSecs) to autoOff
+        else -> "Off" to autoOff
     }
 
     ModalBottomSheet(
@@ -847,7 +973,7 @@ fun DeviceSheet(vm: MainViewModel, device: Device, onDismiss: () -> Unit) {
         ) {
             Text(device.name, fontSize = 30.sp, lineHeight = 34.sp, fontWeight = FontWeight.Bold, color = Navy)
             Text("${device.kind.label}  ·  Box ${device.boxId}", fontSize = 15.sp, color = Muted)
-            Spacer(Modifier.height(22.dp))
+            Spacer(Modifier.height(18.dp))
 
             RunGauge(
                 live = live,
@@ -857,22 +983,11 @@ fun DeviceSheet(vm: MainViewModel, device: Device, onDismiss: () -> Unit) {
                 caption = caption,
             )
 
-            Spacer(Modifier.height(22.dp))
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                HeroStat("Current", if (isRunning) amps(status?.amps ?: 0f) else "0 A", Modifier.weight(1f))
-                VLine()
-                val autoLabel = if (isRunning) "Auto-off in" else "Auto-off after"
-                val autoValue = when {
-                    device.autoOffMin <= 0 -> "Never"
-                    isRunning -> formatDuration(device.autoOffMin * 60 - runSecs)
-                    else -> "${device.autoOffMin} min"
-                }
-                HeroStat(autoLabel, autoValue, Modifier.weight(1f))
-            }
-
             Spacer(Modifier.height(18.dp))
+            CurrentLevel(value = if (isRunning) status?.amps ?: 0f else 0f)
+            Spacer(Modifier.height(12.dp))
             NoteBox(device, status, pending, outcome)
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(12.dp))
 
             val label = when {
                 pending != null && pending.stage == Stage.SENDING -> "Sending command…"
@@ -892,15 +1007,66 @@ fun DeviceSheet(vm: MainViewModel, device: Device, onDismiss: () -> Unit) {
     }
 }
 
+/** Level meter for the motor current measured by the clamp sensor, shown whether the motor is on or off. */
+@Composable
+fun CurrentLevel(value: Float) {
+    val max = when {
+        value <= 10f -> 10
+        value <= 20f -> 20
+        else -> 30
+    }
+    val fill by animateFloatAsState((value / max).coerceIn(0f, 1f), tween(500), label = "level")
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(AppBg, RoundedCornerShape(22.dp))
+            .padding(horizontal = 18.dp, vertical = 14.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Current level", fontSize = 15.sp, color = Muted, modifier = Modifier.weight(1f))
+            Text(
+                if (value > 0f) amps(value) else "0 A",
+                fontSize = 24.sp,
+                lineHeight = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = Navy,
+            )
+        }
+        Spacer(Modifier.height(10.dp))
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(14.dp)
+                .background(Color.White, CircleShape)
+        ) {
+            Box(
+                Modifier
+                    .fillMaxWidth(fill)
+                    .fillMaxHeight()
+                    .background(Brush.horizontalGradient(listOf(SkyLight, Sky)), CircleShape)
+            )
+        }
+        Spacer(Modifier.height(6.dp))
+        Row(Modifier.fillMaxWidth()) {
+            Text("0", fontSize = 12.sp, color = Muted)
+            Spacer(Modifier.weight(1f))
+            Text("${max / 2}", fontSize = 12.sp, color = Muted)
+            Spacer(Modifier.weight(1f))
+            Text("$max A", fontSize = 12.sp, color = Muted)
+        }
+    }
+}
+
 /** Round gauge: the ring is the auto-off countdown, the water inside moves while the motor runs. */
 @Composable
 fun RunGauge(live: Boolean, busy: Boolean, fraction: Float, text: String, caption: String) {
     val sweep by animateFloatAsState(fraction, tween(600), label = "sweep")
     val ringColor = if (busy) Amber else Sky
 
-    Box(Modifier.size(216.dp), contentAlignment = Alignment.Center) {
+    Box(Modifier.size(200.dp), contentAlignment = Alignment.Center) {
         WaveCanvas(animate = live, millis = 3600, modifier = Modifier.matchParentSize()) { phase ->
-            val stroke = 13.dp.toPx()
+            val stroke = 12.dp.toPx()
             val arcSize = Size(size.width - stroke, size.height - stroke)
             val arcTopLeft = Offset(stroke / 2f, stroke / 2f)
             drawArc(
@@ -923,13 +1089,13 @@ fun RunGauge(live: Boolean, busy: Boolean, fraction: Float, text: String, captio
                     style = Stroke(stroke, cap = StrokeCap.Round),
                 )
             }
-            val radius = size.minDimension / 2f - stroke - 9.dp.toPx()
+            val radius = size.minDimension / 2f - stroke - 8.dp.toPx()
             val porthole = Path().apply { addOval(Rect(center = center, radius = radius)) }
             clipPath(porthole) {
                 drawRect(Chip)
                 if (live) {
-                    wave(phase, 0.60f, 7.dp.toPx(), 1.3f, SkyLight.copy(alpha = 0.45f))
-                    wave(-phase + 2f, 0.66f, 6.dp.toPx(), 1.9f, Sky.copy(alpha = 0.35f))
+                    wave(phase, 0.66f, 7.dp.toPx(), 1.3f, SkyLight.copy(alpha = 0.45f))
+                    wave(-phase + 2f, 0.72f, 6.dp.toPx(), 1.9f, Sky.copy(alpha = 0.35f))
                 }
             }
         }
@@ -941,7 +1107,7 @@ fun RunGauge(live: Boolean, busy: Boolean, fraction: Float, text: String, captio
                 fontWeight = FontWeight.Bold,
                 color = if (busy) Amber else Navy,
             )
-            Text(caption, fontSize = 15.sp, color = if (live) Navy.copy(alpha = 0.7f) else Muted)
+            Text(caption, fontSize = 14.sp, color = if (live) Navy.copy(alpha = 0.75f) else Muted)
         }
     }
 }
@@ -1057,6 +1223,33 @@ fun SetupScreen(vm: MainViewModel) {
         }
 
         item {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .shadow(2.dp, CardShape, spotColor = Navy.copy(alpha = 0.25f))
+                    .background(Color.White, CardShape)
+                    .padding(20.dp),
+            ) {
+                Text("View", fontWeight = FontWeight.SemiBold, fontSize = 20.sp, color = Navy)
+                Text("How your motors are shown on the Devices tab", fontSize = 13.sp, color = Muted)
+                Spacer(Modifier.height(14.dp))
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .background(AppBg, CircleShape)
+                        .padding(4.dp)
+                ) {
+                    ViewOption("Tiles", list = false, selected = !vm.settings.listView, modifier = Modifier.weight(1f)) {
+                        vm.setListView(false)
+                    }
+                    ViewOption("List", list = true, selected = vm.settings.listView, modifier = Modifier.weight(1f)) {
+                        vm.setListView(true)
+                    }
+                }
+            }
+        }
+
+        item {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -1149,6 +1342,55 @@ fun SetupScreen(vm: MainViewModel) {
             },
             onDismiss = { editing = null },
         )
+    }
+}
+
+/** One half of the Tiles / List selector. */
+@Composable
+private fun ViewOption(
+    label: String,
+    list: Boolean,
+    selected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    val bg by animateColorAsState(if (selected) Navy else Color.Transparent, label = "viewBg")
+    val fg = if (selected) Color.White else Muted
+    Row(
+        modifier
+            .clip(CircleShape)
+            .background(bg)
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        Canvas(Modifier.size(18.dp)) {
+            val w = size.width
+            val h = size.height
+            if (list) {
+                val bar = h * 0.20f
+                val r = CornerRadius(bar / 2f)
+                for (i in 0..2) {
+                    drawRoundRect(fg, topLeft = Offset(0f, i * h * 0.40f), size = Size(w, bar), cornerRadius = r)
+                }
+            } else {
+                val cell = w * 0.42f
+                val r = CornerRadius(cell * 0.28f)
+                for (ix in 0..1) {
+                    for (iy in 0..1) {
+                        drawRoundRect(
+                            fg,
+                            topLeft = Offset(ix * (w - cell), iy * (h - cell)),
+                            size = Size(cell, cell),
+                            cornerRadius = r,
+                        )
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.width(9.dp))
+        Text(label, color = fg, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 

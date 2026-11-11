@@ -85,6 +85,8 @@ data class Toast(val title: String, val sub: String, val kind: ToastKind)
 data class Settings(
     val demoMode: Boolean = true,
     val host: String = "192.168.4.1",
+    /** Home screen layout: false = tiles (2 per row), true = list (1 per row). */
+    val listView: Boolean = false,
 )
 
 fun defaultDevices(): List<Device> = listOf(

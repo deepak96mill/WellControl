@@ -152,6 +152,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { refresh() }
     }
 
+    /** Home screen layout: tiles or list. */
+    fun setListView(on: Boolean) {
+        settings = settings.copy(listView = on)
+        store.saveSettings(settings)
+    }
+
     fun setHost(host: String) {
         if (host.isBlank()) return
         settings = settings.copy(host = host)
