@@ -46,10 +46,13 @@ Share the same APK with family members. Everyone's app talks to the same home bo
 
 ## Using the app
 
-* **Devices tab:** every device has an iOS-style toggle switch. After you flip it the card shows
-  *Sending… → Waiting for the motor sensor… → Confirmed ON/OFF* (green) or *No response* (red), with a
-  pop-up and a small vibration. Live status: RUNNING / STOPPED / Offline / Fault, run time, motor current,
-  auto-off countdown. **Stop all motors** is in the top card.
+* **Devices tab:** a water-themed top card shows how many motors are running, the total load, the
+  longest run and the next auto-off, with **Stop all motors**. Below it every motor is a tile with an
+  iOS-style toggle switch; a running tile turns into moving blue water. After you flip a switch the tile
+  shows *Starting… → Waiting for sensor → Confirmed ON/OFF* or *No response* (red), with a pop-up and a
+  small vibration.
+* **Tap a tile** to open its details: a round gauge with the run time and auto-off countdown, the motor
+  current, the confirmation message and a big **Turn on / Turn off** button.
 * **Setup tab:**
   * **Demo mode** switch: turn it OFF when the real home box is ready.
   * **Home box address:** usually `192.168.4.1` (shown on the home box screen).
@@ -87,3 +90,8 @@ The app polls `/api/status` every 2 seconds while it is open.
 * Kotlin + Jetpack Compose (Material 3), minSdk 26 (Android 8.0+), targetSdk 35
 * Only standard Android/Jetpack libraries. The INTERNET permission is used only to reach the home box on local Wi-Fi.
 * Requests are sent over the Wi-Fi network even when it has no internet, so Android doesn't send them over mobile data
+
+## Credits
+
+The app uses the **Outfit** typeface (SIL Open Font License 1.1, see `licenses/Outfit-OFL.txt`).
+The water artwork was generated for this project.

@@ -422,7 +422,7 @@ fun HomeScreen(vm: MainViewModel, onOpen: (Int) -> Unit) {
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .padding(start = 6.dp, end = 6.dp, top = 10.dp, bottom = 2.dp),
+                    .padding(start = 6.dp, end = 6.dp, top = 6.dp, bottom = 0.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
@@ -458,7 +458,7 @@ fun TopBar(vm: MainViewModel) {
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = 4.dp, vertical = 8.dp),
+            .padding(horizontal = 4.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
@@ -543,10 +543,10 @@ fun Hero(vm: MainViewModel, running: List<Device>) {
         WaterBackground(animate = count > 0, modifier = Modifier.matchParentSize())
 
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Spacer(Modifier.height(26.dp))
+            Spacer(Modifier.height(18.dp))
             Box(
                 Modifier
-                    .size(62.dp)
+                    .size(50.dp)
                     .background(
                         Brush.verticalGradient(
                             listOf(Color.White.copy(alpha = 0.40f), Color.White.copy(alpha = 0.14f))
@@ -560,25 +560,25 @@ fun Hero(vm: MainViewModel, running: List<Device>) {
                     painter = painterResource(R.drawable.ic_drop),
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(30.dp),
+                    modifier = Modifier.size(25.dp),
                 )
             }
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(8.dp))
             Text("Motors running", color = Color.White.copy(alpha = 0.92f), fontSize = 16.sp)
             Row {
                 Text(
                     "$count",
                     color = Color.White,
-                    fontSize = 86.sp,
-                    lineHeight = 90.sp,
+                    fontSize = 74.sp,
+                    lineHeight = 78.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.alignByBaseline(),
                 )
                 Text(
                     "/$total",
                     color = Color.White.copy(alpha = 0.78f),
-                    fontSize = 32.sp,
-                    lineHeight = 36.sp,
+                    fontSize = 28.sp,
+                    lineHeight = 32.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
                         .padding(start = 6.dp)
@@ -600,7 +600,7 @@ fun Hero(vm: MainViewModel, running: List<Device>) {
                 Spacer(Modifier.width(8.dp))
                 Text(headline, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
             }
-            Spacer(Modifier.height(22.dp))
+            Spacer(Modifier.height(16.dp))
 
             // White panel sitting inside the hero.
             Column(
@@ -608,7 +608,7 @@ fun Hero(vm: MainViewModel, running: List<Device>) {
                     .padding(8.dp)
                     .fillMaxWidth()
                     .background(Color.White, CardShape)
-                    .padding(horizontal = 12.dp, vertical = 18.dp)
+                    .padding(horizontal = 12.dp, vertical = 16.dp)
             ) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     HeroStat("Total load", if (count > 0) amps(load) else "0 A", Modifier.weight(1f))
@@ -617,7 +617,7 @@ fun Hero(vm: MainViewModel, running: List<Device>) {
                     VLine()
                     HeroStat("Next auto-off", nextOff?.let { formatDuration(it) } ?: "–", Modifier.weight(1f))
                 }
-                Spacer(Modifier.height(18.dp))
+                Spacer(Modifier.height(14.dp))
                 PillButton("Stop all motors", onClick = { vm.stopAll() })
             }
         }
@@ -660,7 +660,7 @@ fun DeviceTile(
     val switchOn = pending?.target ?: isRunning
 
     val nameColor = if (live) Color.White else Navy
-    val soft = if (live) Color.White.copy(alpha = 0.85f) else Muted
+    val soft = if (live) Color.White.copy(alpha = 0.95f) else Muted
 
     val line1: String
     val line1Color: Color
@@ -729,8 +729,8 @@ fun DeviceTile(
                 modifier = Modifier.matchParentSize(),
             )
             WaveCanvas(animate = true, millis = 4200, modifier = Modifier.matchParentSize()) { phase ->
-                wave(phase, 0.74f, 6.dp.toPx(), 1.2f, Color.White.copy(alpha = 0.16f))
-                wave(-phase + 1.5f, 0.82f, 5.dp.toPx(), 1.8f, Color.White.copy(alpha = 0.14f))
+                wave(phase, 0.50f, 6.dp.toPx(), 1.2f, Color(0xFF0B46B8).copy(alpha = 0.22f))
+                wave(-phase + 1.5f, 0.60f, 5.dp.toPx(), 1.8f, Color(0xFF0B46B8).copy(alpha = 0.26f))
             }
         }
 
