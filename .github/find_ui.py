@@ -24,9 +24,9 @@ if mode == "switches":
     found = []
     for n, x1, y1, x2, y2 in ns:
         w = x2 - x1
-        if n.get("clickable") == "true" and w < 0.2 * screen_w and (x1 + x2) / 2 > 0.72 * screen_w:
+        if n.get("clickable") == "true" and 0.10 * screen_w < w < 0.16 * screen_w:
             found.append(((x1 + x2) // 2, (y1 + y2) // 2))
-    for x, y in sorted(set(found), key=lambda p: p[1]):
+    for x, y in sorted(set(found), key=lambda p: (p[1], p[0])):
         print(x, y)
 elif mode == "text":
     want = sys.argv[3]

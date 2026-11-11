@@ -40,9 +40,10 @@ mapfile -t SW < <(python3 .github/find_ui.py "$OUT/home.xml" switches)
 echo "switches: ${SW[*]}"
 SETUP=$(where home Setup)
 STOP=$(where home "Stop all motors")
-echo "setup: $SETUP  stop: $STOP"
+TILE=$(where home "Well 1")
+echo "setup: $SETUP  stop: $STOP  tile: $TILE"
 
-adb shell screenrecord --size 720x1600 --bit-rate 6000000 --time-limit 120 /sdcard/demo.mp4 &
+adb shell screenrecord --size 720x1600 --bit-rate 6000000 --time-limit 150 /sdcard/demo.mp4 &
 REC=$!
 sleep 2
 
@@ -54,43 +55,49 @@ if [ -n "${SW[0]}" ]; then
   shot 03_well1_running
 fi
 
-if [ -n "${SW[2]}" ]; then
-  tap ${SW[2]}
+if [ -n "${SW[1]}" ]; then
+  tap ${SW[1]}
   sleep 6
   shot 04_two_running
 fi
 
-adb shell input swipe 540 1700 540 700 400
+adb shell input swipe 540 1900 540 600 500
 sleep 2
 shot 05_scrolled
-adb shell input swipe 540 600 540 2100 300
+adb shell input swipe 540 600 540 2200 300
 sleep 2
 
-if [ -n "${SW[0]}" ]; then
-  tap ${SW[0]} & T=$!
-  burst 06_well1_turning_off
+if [ -n "$TILE" ]; then
+  tap $TILE
+  sleep 3
+  shot 06_detail_running
+  tap 540 2190 & T=$!
+  burst 07_detail_turning_off
   wait $T
   sleep 5
-  shot 07_well1_off
+  shot 08_detail_off
+  adb shell input keyevent BACK
+  sleep 2
 fi
 
 if [ -n "$STOP" ]; then
   tap $STOP & T=$!
-  burst 08_stop_all
+  burst 09_stop_all
   wait $T
   sleep 6
+  shot 10_all_off
 fi
 
 if [ -n "$SETUP" ]; then
   tap $SETUP
   sleep 3
-  shot 09_setup
+  shot 11_setup
   dump setup
   ROW=$(where setup "Well 1")
   if [ -n "$ROW" ]; then
     tap $ROW
     sleep 3
-    shot 10_edit_device
+    shot 12_edit_device
   fi
 fi
 
