@@ -98,6 +98,30 @@ if [ -n "$SETUP" ]; then
     tap $ROW
     sleep 3
     shot 12_edit_device
+    adb shell input keyevent BACK
+    sleep 2
+  fi
+
+  # switch the home screen to list view and try it
+  LIST=$(where setup "List")
+  DEVICES=$(where home Devices)
+  if [ -n "$LIST" ] && [ -n "$DEVICES" ]; then
+    tap $LIST
+    sleep 2
+    shot 13_setup_list_selected
+    tap $DEVICES
+    sleep 3
+    shot 14_list_all_off
+    dump list
+    mapfile -t LSW < <(python3 .github/find_ui.py "$OUT/list.xml" switches)
+    echo "list switches: ${LSW[*]}"
+    if [ -n "${LSW[0]}" ]; then
+      tap ${LSW[0]}
+      sleep 2
+      tap ${LSW[2]}
+      sleep 6
+      shot 15_list_running
+    fi
   fi
 fi
 

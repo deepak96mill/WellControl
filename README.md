@@ -51,9 +51,11 @@ Share the same APK with family members. Everyone's app talks to the same home bo
   iOS-style toggle switch; a running tile turns into moving blue water. After you flip a switch the tile
   shows *Starting… → Waiting for sensor → Confirmed ON/OFF* or *No response* (red), with a pop-up and a
   small vibration.
-* **Tap a tile** to open its details: a round gauge with the run time and auto-off countdown, the motor
-  current, the confirmation message and a big **Turn on / Turn off** button.
+* **Tap a motor** to open its details: a round gauge with the run time and auto-off countdown, a
+  **Current level** meter (the amps measured by the clamp sensor, shown whether the motor is on or off),
+  the confirmation message and a big **Turn on / Turn off** button.
 * **Setup tab:**
+  * **View:** show the motors on the Devices tab as **Tiles** (two per row) or as a **List** (one per row).
   * **Demo mode** switch: turn it OFF when the real home box is ready.
   * **Home box address:** usually `192.168.4.1` (shown on the home box screen).
   * **Devices:** add, edit or delete them. For each one, set:

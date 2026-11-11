@@ -26,12 +26,14 @@ class Store(context: Context) {
     fun loadSettings(): Settings = Settings(
         demoMode = prefs.getBoolean("demoMode", true),
         host = prefs.getString("host", null) ?: "192.168.4.1",
+        listView = prefs.getBoolean("listView", false),
     )
 
     fun saveSettings(s: Settings) {
         prefs.edit()
             .putBoolean("demoMode", s.demoMode)
             .putString("host", s.host)
+            .putBoolean("listView", s.listView)
             .apply()
     }
 }
